@@ -1,0 +1,479 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Excel Add-in</title>
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- <link href="taskpane.css" rel="stylesheet" type="text/css" /> -->
+  <script src="taskpane.js"></script>
+  <style>
+    body {
+      background-color: #87ceeb;
+      /* Sky blue */
+      font-family: "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    label,
+    select,
+    .form-label,
+    .form-select {
+      font-size: 12px;
+    }
+
+    .dropdown-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .dropdown-group {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      /* Equal width */
+    }
+
+    .dropdown-group label {
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
+
+    select {
+      padding: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .main-container {
+      background: #fff;
+      max-width: 750px;
+      margin: 10px auto;
+      flex: 1;
+      padding: 10px;
+      /* padding: 30px; */
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn {
+      margin: 5px;
+    }
+
+    .uniform-dropdown {
+      width: 145px;
+      min-height: 38px;
+      max-height: 38px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: #fff;
+      padding: 6px 8px;
+      font-size: 12px;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dropdown-wrapper {
+      position: relative;
+      /* parent for absolute child */
+      display: inline-block;
+    }
+
+    .dropdown-button {
+      padding: 8px 20px 8px 10px;
+      /* margin-top: 6px; */
+      border: 1px solid #424141;
+      border-radius: 6px;
+      background-color: #fff;
+      cursor: pointer;
+      width: fit-content;
+      min-width: 145px;
+      max-width: 145px;
+      min-height: 40px;
+      /* width: 200px; */
+      /* height: 40px; */
+      height: fit-content;
+      margin-bottom: 5px;
+      display: block;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+      flex: 1;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      /* push it below the button */
+      left: 0;
+      z-index: 999;
+      /* keep it above other elements */
+      background: white;
+      border: 1px solid #3a3838;
+      max-height: 200px;
+      min-width: 145px;
+      max-width: 145px;
+      overflow-y: auto;
+    }
+
+    .dropdown-content {
+      display: none;
+      padding: 4px 0;
+      border: 1px solid #424141;
+      border-radius: 6px;
+      background-color: white;
+      min-width: 145px;
+      max-width: 145px;
+      max-height: 200px;
+      overflow-y: auto;
+      flex-direction: column;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      position: absolute;
+    }
+
+    #styleSearchInput {
+      margin: 4px 8px 6px 8px;
+      width: calc(100% - 16px);
+      box-sizing: border-box;
+    }
+
+    .dropdown-content label {
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      padding: 6px 12px;
+      cursor: pointer;
+      gap: 8px;
+      /* transition: background-color 0.1s ease, color 0.1s ease; */
+      /* this is label transition*/
+      font-family: "Segoe UI", sans-serif;
+      font-size: 12px;
+      font-weight: normal;
+      color: #000;
+    }
+
+    .dropdown-content label:hover,
+    .dropdown-content label:hover span,
+    .dropdown-content label:hover b {
+      background-color: #5b626a;
+      /* Dark gray */
+      color: #fff !important;
+    }
+
+    #styleDropdownBtn {
+      display: inline-flex !important;
+      align-items: center;
+      transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      padding-right: 36px !important;
+    }
+
+    #styleDropdownBtn.active,
+    #styleDropdownBtn:focus {
+      border-color: #86b7fe !important;
+      outline: 0;
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+    }
+
+    #styleDropdownValue {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      text-align: left;
+    }
+
+    .tooltip-container {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+      color: #cc2900;
+      /* Bootstrap warning color */
+      font-weight: bold;
+      font-size: 18px;
+      margin: 10px;
+      align-self: flex-end;
+      padding: 10px;
+    }
+
+    .tooltip-container .tooltip-text {
+      visibility: hidden;
+      /* background-color: #ffc107; */
+      color: #000;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 30%;
+      /* above icon */
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      font-size: 13px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .tooltip-container:hover .tooltip-text {
+      visibility: visible;
+    }
+
+    .token-expiry {
+      position: fixed;
+
+      bottom: -2px;
+      right: 5px;
+      background-color: #ffefc4;
+      color: #000;
+      padding: 1px 20px;
+      border: 1px solid #e0b800;
+      border-radius: 8px;
+      font-weight: 450;
+      font-size: 13px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+    }
+
+    .dropdown-content.show {
+      display: block;
+      flex-direction: column;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      bottom: 20px;
+      right: 20px;
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 15px;
+      border-radius: 10px;
+      color: white;
+    }
+
+    .modal-content {
+      background-color: #333;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    #authNowBtn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      margin-top: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    #loader {
+      display: none;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    #categorySelect {
+      height: 70px;
+    }
+
+    #deliverySelect {
+      height: 70px;
+    }
+
+    #accountSelect {
+      height: 70px;
+    }
+
+    #seasonSelect {
+      width: 100%;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main id="app-body" class="main-container text-center">
+    <img width="70" height="70" src="/images/ptex300.jpg" alt="Ptex" class="mb-3" />
+
+    <div class="mb-4">
+      <button class="btn btn-primary" type="button" id="openDialog">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+          class="bi bi-person-check-fill" viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z" />
+          <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+        </svg>
+        Authenticate
+      </button>
+      <button class="btn btn-danger" id="clearButton">Clear Sheet</button>
+    </div>
+
+    <!-- <button id="StyleData" style="display: none;">StyleOverview</button>  -->
+    <div id="filtersDiv" style="display: none">
+      <!-- Row 1 -->
+      <div class="dropdown-row">
+        <div class="mb-3 text-start dropdown-group dropdown-wrapper" id="seasonDropdownWrapper">
+          <label for="seasonSelect" class="form-label fw-bold">Season <span class="text-danger">*</span></label>
+          <select id="seasonSelect" class="form-select dropdown-button uniform-dropdown"
+            onchange="updateSeasSelectedValues()" title="--Select Season--">
+            <option value="">--Select Season--</option>
+            <!-- JavaScript will insert options here -->
+          </select>
+          <div class="mt-2 fw-semibold text-muted" id="selectedSeasons" style="display: none" hidden>None</div>
+        </div>
+
+        <div class="mb-3 text-start dropdown-group dropdown-wrapper" id="divisionDropdownWrapper">
+          <label for="divisionSelect" class="form-label fw-bold">Department <span class="text-danger">*</span></label>
+          <select id="divisionSelect" class="form-select dropdown-button uniform-dropdown"
+            onchange="updateDivSelectedValues()" title="--Select Division--">
+            <option value="">--Select Department--</option>
+            <!-- JavaScript will insert options here -->
+          </select>
+          <div class="mt-2 fw-semibold text-muted" id="selectedDivisions" style="display: none" hidden>None</div>
+        </div>
+      </div>
+      <!-- Row 2 -->
+      <div class="dropdown-row">
+        <div class="mb-3 text-start dropdown-group dropdown-wrapper" id="brandDropdownWrapper">
+          <label for="brandSelect" class="form-label fw-bold">Collection Line <span class="text-danger">*</span></label>
+          <select id="brandSelect" class="form-select dropdown-button uniform-dropdown"
+            onchange="updatebrandSelectedValues()" title="--Select Brand--">
+            <option value="all" id="selectAllOption">--Select Brand--</option>
+            <!-- JavaScript will insert options here -->
+          </select>
+          <div class="mt-2 fw-semibold text-muted" id="selectedBrands" style="display: none" hidden>None</div>
+        </div>
+
+        <div class="mb-3 text-start dropdown-group dropdown-wrapper" id="genderDropdownWrapper">
+          <label for="genderSelect" class="form-label fw-bold">Gender <span class="text-danger">*</span></label>
+          <select id="genderSelect" class="form-select dropdown-button uniform-dropdown"
+            onchange="updategenderSelectedValues()" title="--Select Gender--">
+            <option value="">--Select Gender--</option>
+            <!-- JavaScript will insert options here -->
+          </select>
+          <div class="mt-2 fw-semibold text-muted" id="selectedGender" style="display: none" hidden>None</div>
+        </div>
+      </div>
+
+      <!-- Row 3 -->
+      <div class="dropdown-row">
+        <div class="mb-3 text-start dropdown-group dropdown-wrapper" id="categoryDropdownWrapper">
+          <label for="categorySelect" class="form-label fw-bold">Category <span class="text-danger">*</span></label>
+          <select id="categorySelect" class="form-select dropdown-button uniform-dropdown"
+            onchange="updatecategorySelectedValues()" title="--Select Category--">
+            <option value="">--Select Category--</option>
+            <!-- JavaScript will insert options here -->
+          </select>
+          <div class="mt-2 fw-semibold text-muted" id="selectedCategories" style="display: none" hidden>None</div>
+        </div>
+
+        <div class="mb-3 text-start dropdown-group dropdown-wrapper" id="styleDropdownWrapper">
+          <label for="styleDropdownBtn" class="form-label fw-bold">
+            Styles <span class="text-danger">*</span>
+          </label>
+
+          <div class="form-select dropdown-button uniform-dropdown" id="styleDropdownBtn" title="--Select Style--">
+            <span id="styleDropdownValue">--Select Style--</span>
+          </div>
+
+          <div class="dropdown-content" id="styleDropdownMenu">
+            <input type="text" id="styleSearchInput" class="form-control form-control-sm mb-2"
+              placeholder="Search Style..."
+              style="font-size: 12px; padding: 4px; font-family: 'Segoe UI', sans-serif;" />
+            <label>
+              <input type="checkbox" id="styleSelectAll" />
+              <span>Select All</span>
+            </label>
+            <div id="styleOptions">
+              <!-- JavaScript will insert style checkboxes here -->
+            </div>
+          </div>
+          <div class="mt-2 fw-semibold text-muted" id="selectedStyles" style="display: none" hidden>
+            None
+          </div>
+        </div>
+      </div>
+
+      <!-- <button id="fetchStylesBtn">Fetch Season Styles</button> -->
+      <button class="btn btn-success" id="StyleData">Download</button><br />
+      <button class="btn btn-success" id="UploadData">Upload</button>
+      <div id="loader"></div>
+    </div>
+    <p id="fileInfo" hidden></p>
+    <p id="access_token" hidden></p>
+    <!-- <p id="token_expiresin" hidden></p> -->
+    <p id="style" hidden></p>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </main>
+  <div class="text-end mt-3" style="position: fixed; bottom: 5px; right: 5px; z-index: 999">
+    <div class="tooltip-container">
+      <span>ⓘ</span>
+      <div class="tooltip-text">
+        <p id="token_expiresin" class="token-expiry" style="display: none"></p>
+      </div>
+    </div>
+  </div>
+  <div id="toast" style="
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #323232;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        z-index: 9999;
+      "></div>
+  <div id="authModal" class="modal">
+    <div class="modal-content">
+      <p>Your session will expire in less than 10 minutes. Please authenticate again.</p>
+      <button id="authNowBtn">Authenticate</button>
+    </div>
+  </div>
+  <div class="modal fade" id="moduleWarningModal1" tabindex="-1" aria-labelledby="moduleWarningLabel1"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-warning">
+          <h5 class="modal-title" id="moduleWarningLabel">Module Selection Required</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Please check at least one field for Fetch or Update before creating JSON.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
