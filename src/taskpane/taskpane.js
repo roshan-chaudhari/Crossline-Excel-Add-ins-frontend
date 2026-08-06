@@ -97,7 +97,6 @@ document.getElementById("openDialog").addEventListener("click", () => {
           api: dapi[1],
           ti: dti[1],
         };
-
         try {
           const address = await fetch(apiURL + "/api/Auth/token", {
             method: "POST",
