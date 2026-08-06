@@ -25,16 +25,17 @@ Office.onReady(() => {
   toggleButtonVisibility();
 });
 
-let Server = "";
-Server = "LocalHost"; //Localhost
-// Server = "Server"; //Server
-let ServerURL = "",
-  apiURL = "";
-if (Server !== "LocalHost") {
-  ServerURL = "https://crosslinecosting-dhemhcdyhcfje5e3.centralindia-01.azurewebsites.net";
-} else {
-  ServerURL = "https://localhost:3000";
-  apiURL = "https://localhost:4000";
+let ServerURL = process.env.CLIENT_SERVER_URL;
+let apiURL = process.env.CLIENT_API_URL;
+
+if (!ServerURL || !apiURL) {
+  if (typeof window !== "undefined" && window.location.port === "3000") {
+    ServerURL = "https://localhost:3000";
+    apiURL = "https://localhost:4000";
+  } else {
+    ServerURL = typeof window !== "undefined" ? window.location.origin : "https://localhost:3000";
+    apiURL = typeof window !== "undefined" ? window.location.origin : "https://localhost:4000";
+  }
 }
 let Seasons = [];
 let Divisions = [];
