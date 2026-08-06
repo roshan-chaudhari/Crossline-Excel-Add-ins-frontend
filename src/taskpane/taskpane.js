@@ -25,8 +25,8 @@ Office.onReady(() => {
   toggleButtonVisibility();
 });
 
-let ServerURL = process.env.CLIENT_SERVER_URL;
-let apiURL = process.env.CLIENT_API_URL;
+let ServerURL = typeof process !== "undefined" && process.env ? process.env.CLIENT_SERVER_URL : undefined;
+let apiURL = typeof process !== "undefined" && process.env ? process.env.CLIENT_API_URL : undefined;
 
 if (!ServerURL || !apiURL) {
   if (typeof window !== "undefined" && window.location.port === "3000") {
