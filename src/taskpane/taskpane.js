@@ -25,16 +25,16 @@ Office.onReady(() => {
   toggleButtonVisibility();
 });
 
-let ServerURL = typeof process !== "undefined" && process.env ? process.env.CLIENT_SERVER_URL : undefined;
-let apiURL = typeof process !== "undefined" && process.env ? process.env.CLIENT_API_URL : undefined;
+let ServerURL = "http://54.209.25.233:4100"; // typeof process !== "undefined" && process.env ? process.env.CLIENT_SERVER_URL : undefined;
+let apiURL = "http://54.209.25.233:4100"; //typeof process !== "undefined" && process.env ? process.env.CLIENT_API_URL : undefined;
 
 if (!ServerURL || !apiURL) {
   if (typeof window !== "undefined" && window.location.port === "3000") {
-    ServerURL = "https://localhost:3000";
-    apiURL = "https://localhost:4000";
+    ServerURL = "http://54.209.25.233:4100";
+    apiURL = "http://54.209.25.233:4100";
   } else {
-    ServerURL = typeof window !== "undefined" ? window.location.origin : "https://localhost:3000";
-    apiURL = typeof window !== "undefined" ? window.location.origin : "https://localhost:4000";
+    ServerURL = typeof window !== "undefined" ? window.location.origin : "http://54.209.25.233:4100";
+    apiURL = typeof window !== "undefined" ? window.location.origin : "http://54.209.25.233:4100";
   }
 }
 
@@ -47,7 +47,7 @@ if (!ServerURL || !apiURL) {
 //   ServerURL = "https://crosslinecosting-dhemhcdyhcfje5e3.centralindia-01.azurewebsites.net";
 // } else {
 //   ServerURL = "https://localhost:3000";
-//   apiURL = "https://localhost:4000";
+//   apiURL = "http://54.209.25.233:4100";
 // }
 let Seasons = [];
 let Divisions = [];
