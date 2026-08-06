@@ -37,6 +37,18 @@ if (!ServerURL || !apiURL) {
     apiURL = typeof window !== "undefined" ? window.location.origin : "https://localhost:4000";
   }
 }
+
+// let Server = "";
+// Server = "LocalHost"; //Localhost
+// // Server = "Server"; //Server
+// let ServerURL = "",
+//   apiURL = "";
+// if (Server !== "LocalHost") {
+//   ServerURL = "https://crosslinecosting-dhemhcdyhcfje5e3.centralindia-01.azurewebsites.net";
+// } else {
+//   ServerURL = "https://localhost:3000";
+//   apiURL = "https://localhost:4000";
+// }
 let Seasons = [];
 let Divisions = [];
 let Brands = [];
@@ -779,6 +791,7 @@ function buildFieldMap(data) {
       if (cat === "Finishing/Packing Accessories") cat = "Finishing / Packing Accessories";
       if (cat === "Sewing/Labeling Trims") cat = "Sewing / Labeling Trims";
       if (cat === "Finishing/Packing Trims") cat = "Finishing / Packing Trims";
+      if (cat === "Embellishment") cat = "Embellishments";
 
       if (!categoryOrderMap.has(cat)) {
         categoryOrderMap.set(cat, data.map(() => []));
@@ -1360,9 +1373,7 @@ async function WriteStyleDatainSheet(data, trimCategories) {
       // ── DDP Price formula ─────────────────────────────────────────────────
       for (let colIdx = 2; colIdx < totalCols; colIdx++) {
         const col = String.fromCharCode(65 + colIdx);
-        const formula = isKnit
-          ? `=IFERROR(${col}${rowTransport},0)+IFERROR(${col}${rowProposedFobPrice}/${col}${rowTaux},0)`
-          : `=IFERROR((${col}${rowFobPriceInEuro}+${col}${rowTransport})*${col}${rowTaux}+${col}${rowCertification},0)`;
+        const formula = `=IFERROR(${col}${rowTransport}+(${col}${rowProposedFobPrice}/${col}${rowTaux}),0)`;
         sheet.getRangeByIndexes(rowDdpPrice - 1, colIdx, 1, 1).formulas = [[formula]];
       }
 
